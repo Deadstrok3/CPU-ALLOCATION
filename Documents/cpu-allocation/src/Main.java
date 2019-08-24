@@ -34,22 +34,31 @@ public class Main {
             Collections.sort(tempList);
             int tempCpu=cpu;
             totalCost.put(name,new HashMap<String, Integer>());
+            CustomTuple tuple = new CustomTuple();
+            tuple.setServerRegion(name);
+            double totalServerCost =0;
             for(Double costly:tempList) {
                 int currentCpuCount = costPerCpu.get(name).get(costly);
                 if(tempCpu>0) {
                     if (currentCpuCount <= tempCpu) {
                         String currentCpuName = Util.allNames.get(currentCpuCount);
                         int number = tempCpu / currentCpuCount;
+                        totalServerCost=totalServerCost+(instances.get(name).get(currentCpuName)*number);
                         int remainingCpu = tempCpu % currentCpuCount;
                         tempCpu=remainingCpu;
                         totalCost.get(name).put(currentCpuName,number);
                     }
                 }
             }
+            tuple.setCost(totalServerCost);
+            tuple.setServers(totalCost.get(name));
+            Util.results.add(tuple);
+
         }
         System.out.println(instances);
         System.out.println(costPerCpu);
         System.out.println(totalCost);
+        System.out.println(Util.results);
     }
 
 }
