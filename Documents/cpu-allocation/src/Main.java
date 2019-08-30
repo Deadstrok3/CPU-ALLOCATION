@@ -9,9 +9,11 @@ public class Main {
 		int hours = scanner.nextInt();
 		System.out.println("Enter the number of cpu that you are gonna use");
 		int numberOfCpu = scanner.nextInt();
+		System.out.println("Enter the maximum amount you can spend");
+		double price = scanner.nextDouble();
 		Map<String, Map<String, Double>> instances = Util.insertIntoMap();
 		System.out.println(instances);
-		System.out.println(get_costs(instances, numberOfCpu, hours, 0));
+		System.out.println(get_costs(instances, numberOfCpu, hours, price));
 	}
 
 	public static String get_costs(Map<String, Map<String, Double>> instances, int cpu, int hours, double price) {
@@ -40,14 +42,20 @@ public class Main {
 				instances.get(name).put(pricePerCpu, temp * hours);
 			}
 		}
+		Map<String, Map<Double, Integer>> costPerCpu = new HashMap<String, Map<Double, Integer>>();
 		Map<String, Map<String, Integer>> totalCost = new HashMap<String, Map<String, Integer>>();
 		for (String name : instances.keySet()) {
 			List<Double> tempList = new ArrayList<Double>();
 			Map<Double, String> tempMap = new HashMap<Double, String>();
+			costPerCpu.put(name, new HashMap<Double, Integer>());
 			for (String instanceName : instances.get(name).keySet()) {
-				tempList.add(instances.get(name).get(instanceName));
-				tempMap.put(instances.get(name).get(instanceName), name);
+				int cpuCount = Util.instanceNames.get(instanceName);
+				Double temp = instances.get(name).get(instanceName);
+				costPerCpu.get(name).put((temp / cpuCount), cpuCount);
+				tempList.add(temp/cpuCount);
+				tempMap.put(temp, instanceName);
 			}
+			
 			totalCost.put(name, new HashMap<String, Integer>());
 			Collections.sort(tempList);
 			CustomTuple tupule = new CustomTuple();
@@ -55,12 +63,13 @@ public class Main {
 			Double tempPrice = price;
 			double totalServerCost = 0;
 			for (Double instancePrice : tempList) {
+				int currentCpuCount = costPerCpu.get(name).get(instancePrice);
 				if (tempPrice > 0) {
-					int numberOfInstances = (int) (tempPrice / instancePrice);
-					tempPrice = tempPrice % instancePrice;
-					String instanceName = tempMap.get(instancePrice);
+					String instanceName = Util.allNames.get(currentCpuCount);
+					int numberOfInstances = (int) (tempPrice / instances.get(name).get(instanceName));
+					tempPrice = tempPrice % instances.get(name).get(instanceName);
 					totalCost.get(name).put(instanceName, numberOfInstances);
-					totalServerCost = totalServerCost + (numberOfInstances * instancePrice);
+					totalServerCost = totalServerCost + (numberOfInstances * instances.get(name).get(instanceName));
 				}
 			}
 			tupule.setCost(totalServerCost);
